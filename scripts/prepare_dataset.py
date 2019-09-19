@@ -172,12 +172,12 @@ def parse_args():
         description="Create multi-resolution pose dataset")
     parser.add_argument(
         '--out', type=str, default='datasets/pose', help='Output dataset path')
-    parser.add_argument('--worker', type=int, default=10,
+    parser.add_argument('--worker', type=int, default=20,
                         help='Number of multi-process cores')
     parser.add_argument('--imgs', type=str,
-                        default='datasets/yangdan/image', help='Image directory')
+                        default='datasets/image', help='Image directory')
     parser.add_argument('--openpose', type=str,
-                        default='datasets/yangdan/openpose', help='Openpose results')
+                        default='datasets/openpose', help='Openpose results')
 
     args = parser.parse_args()
     if not os.path.exists(os.path.dirname(args.out)):
