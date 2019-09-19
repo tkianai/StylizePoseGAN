@@ -43,7 +43,7 @@ def main(args):
         key = 'Openpose-{:0>7d}'.format(idx).encode('utf-8')
         pose_bytes = txn.get(key)
         buffer = BytesIO(pose_bytes)
-        pose = Image.open(pose_bytes).convert('RGB')
+        pose = Image.open(buffer).convert('RGB')
         pose.save(os.path.join(args.save, 'Openpose-{:0>7d}.jpg'.format(idx)))
         
         
