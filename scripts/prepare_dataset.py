@@ -56,7 +56,7 @@ def openpose_keypoints_to_image(file, size=1024):
 
     for key, value in _OPENPOSE.items():
 
-        linewidth = 10 if key == 'pose' else 4
+        linewidth = 15 if key == 'pose' else 4
         threshold = 0.5 if key == 'hand' else 0.3
         pose_item = pose[key]
         if not isinstance(pose_item, list):
@@ -101,11 +101,10 @@ def resize_job(img_file, sizes):
 
     # process for openpose results
     opose = openpose_keypoints_to_image(opose)
-    buffer = BytesIO()
-    opose.save(buffer, format='jpeg', quality=100)
-    opose = buffer.getvalue()
+    opose = opose.convert('RGB')
+    oposes = resize_into_resolutions(opose, sizes=sizes)
 
-    return i, imgs, opose
+    return i, imgs, oposes
 
 
 def write_to_lmdb(txn, dset, worker, sizes=(8, 16, 32, 64, 128, 256, 512, 1024)):
@@ -116,13 +115,13 @@ def write_to_lmdb(txn, dset, worker, sizes=(8, 16, 32, 64, 128, 256, 512, 1024))
     resize_fn = partial(resize_job, sizes=sizes)
 
     with mp.Pool(worker) as pool:
-        for i, imgs, opose in tqdm(pool.imap_unordered(resize_fn, files)):
-            for size, img in zip(sizes, imgs):
+        for i, imgs, oposes in tqdm(pool.imap_unordered(resize_fn, files)):
+            for size, img, opose in zip(sizes, imgs, oposes):
                 key = 'Image-{}-{:0>7d}'.format(size, i).encode('utf-8')
                 txn.put(key, img)
 
-            key = 'Openpose-{:0>7d}'.format(i).encode('utf-8')
-            txn.put(key, opose)
+                key = 'Openpose-{}-{:0>7d}'.format(size, i).encode('utf-8')
+                txn.put(key, opose)
 
             # process one image
             total += 1
