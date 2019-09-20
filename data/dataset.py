@@ -31,6 +31,7 @@ class MultiResolutionPoseDataset(Dataset):
             self.length = int(txn.get("Length".encode('utf-8')).decode('utf-8'))
 
         self.resolution = resolution
+        self.max_resolution = 1024
         self.transforms = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
@@ -43,25 +44,31 @@ class MultiResolutionPoseDataset(Dataset):
 
         with self.env.begin(write=False) as txn:
             img_key = "Image-{}-{:0>7d}".format(self.resolution, index).encode('utf-8')
-            opose_key = "Openpose-{:0>7d}".format(index).encode('utf-8')
+            opose_key = "Openpose-{}-{:0>7d}".format(self.resolution, index).encode('utf-8')
+            max_opose_key = "Openpose-{}-{:0>7d}".format(self.max_resolution, index).encode('utf-8')
 
             img_bytes = txn.get(img_key)
             opose_bytes = txn.get(opose_key)
+            max_opose_bytes = txn.get(max_opose_key)
 
         # Get data
         buffer = BytesIO(img_bytes)
         img = Image.open(buffer).convert('RGB')
         buffer = BytesIO(opose_bytes)
         opose = Image.open(buffer).convert('RGB')
+        buffer = BytesIO(max_opose_bytes)
+        max_opose = Image.open(buffer).convert('RGB')
 
         if self.opt.isTrain and random.random < 0.5:
             img = img.transpose(Image.FLIP_LEFT_RIGHT)
             opose = opose.transpose(Image.FLIP_LEFT_RIGHT)
+            max_opose = max_opose.transpose(Image.FLIP_LEFT_RIGHT)
 
         opose = self.transforms(opose)
         img = self.transforms(img)
+        max_opose = self.transforms(max_opose)
 
-        input_dict = {'label': opose, 'image': img, 'path': "Image-{}-{:0>7d}.png".format(self.resolution, index)}
+        input_dict = {'label': opose, 'image': img, 'path': "Image-{}-{:0>7d}.png".format(self.resolution, index), 'style': max_opose}
 
         return input_dict
 
