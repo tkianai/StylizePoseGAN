@@ -459,6 +459,7 @@ class PoseEncoder(nn.Module):
         for conv in self.cnn:
             out = conv(out)
 
+        out = out.squeeze(2).squeeze(2)
         out = self.linear(out)
         # out = self.lrelu(out)
 
