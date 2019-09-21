@@ -33,6 +33,8 @@ class BaseOptions():
         self.parser.add_argument('--tboard', action='store_true',
                                  help='if specified, use tensorboard logging. Requires tensorflow installed')
 
+        self.parser.add_argument('--code_dim', default=512, type=int)
+
         self.initialized = True
 
     def parse(self, save=True):

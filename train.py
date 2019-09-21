@@ -54,7 +54,7 @@ def train(model, optimizer_G, optimizer_D, data_loader, train_solver, visualizer
                 save_fake = optimize_step % display_freq == 0
 
                 ############## Forward Pass ######################
-                losses, generated = model(data['label'], data['image'], step=step, alpha=alpha, infer=save_fake)
+                losses, generated = model(data['style'], data['label'], data['image'], step=step, alpha=alpha, infer=save_fake)
 
                 # sum per device losses
                 losses = [torch.mean(x) if not isinstance(x, int) else x for x in losses]

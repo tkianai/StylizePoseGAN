@@ -62,25 +62,27 @@ class PoseGANModel(BaseModel):
             })
             self.optimizer_D = torch.optim.Adam(self.netD.discriminator.parameters(), lr=opt.lr, betas=(0.5, 0.999))
 
-    def encode_input(self, label_map, real_image=None):
+    def encode_input(self, style, label_map=None, real_image=None):
 
-        input_label = label_map.cuda()
+        input_style = style.cuda()
+        if label_map is not None:
+            input_label = label_map.cuda()
         if real_image is not None:
             real_image = real_image.cuda()
 
-        return input_label, real_image
+        return input_style, input_label, real_image
 
     def discriminate(self, input_label, test_image, step, alpha):
         input_concat = torch.cat((input_label, test_image.detach()), dim=1)
         return self.netD(input_concat, step=step, alpha=alpha)
 
 
-    def forward(self, label, image, step=0, alpha=-1, infer=False):
+    def forward(self, style, label, image, step=0, alpha=-1, infer=False):
 
-        input_label, real_image = self.encode_input(label, image)
+        input_style, input_label, real_image = self.encode_input(style, label, image)
 
         # Fake Generation
-        fake_image = self.netG(input_label, step=step, alpha=alpha)
+        fake_image = self.netG(input_style, step=step, alpha=alpha)
 
         # Fake detection and Loss
         pred_fake = self.discriminate(input_label, fake_image, step, alpha)
@@ -126,13 +128,13 @@ class PoseGANModel(BaseModel):
         return [self.loss_filter(loss_G_GAN, loss_G_GAN_Feat, loss_G_VGG, loss_D_real, loss_D_fake, loss_gp), None if not infer else fake_image]
 
 
-    def inference(self, label, step=0, alpha=-1):
+    def inference(self, style, step=0, alpha=-1):
 
-        input_label, real_image = self.encode_input(label, image)
+        input_style, input_label, real_image = self.encode_input(style, None, None)
 
         # fake generation
         with torch.no_grad():
-            fake_image = self.netG(input_label, step=step, alpha=alpha)
+            fake_image = self.netG(input_style, step=step, alpha=alpha)
 
         return fake_image
 

@@ -26,5 +26,7 @@ class TrainOptions(BaseOptions):
                                  help='if specified, do *not* use VGG feature matching loss')
         self.parser.add_argument('--no_lsgan', action='store_true',
                                  help='do *not* use least square GAN, if false, use vanilla GAN')
+        self.parser.add_argument('--no_gp', action='store_true',
+                                 help='do *not* use gradient penalty')
 
         self.isTrain = True

@@ -467,6 +467,7 @@ class PoseEncoder(nn.Module):
 
 class PoseGenerator(nn.Module):
     def __init__(self, code_dim=512):
+        super().__init__()
         
         self.style = PoseEncoder(code_dim)
         self.generator = Generator(code_dim)
@@ -578,6 +579,7 @@ class PoseDiscriminator(nn.Module):
 
 
 def weights_init(m):
+    '''
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
         # m.weight.data.normal_(0.0, 0.02)
@@ -589,6 +591,8 @@ def weights_init(m):
 
     if m.bias is not None:
         m.bias.data.fill_(0)
+    '''
+    pass
 
 
 
@@ -620,6 +624,7 @@ def define_D(gpu_ids=None):
 class GANLoss(nn.Module):
     
     def __init__(self, use_lsgan=True, target_real_label=1.0, target_fake_label=0.0, tensor=torch.FloatTensor):
+        super().__init__()
         self.real_label = target_real_label
         self.fake_label = target_fake_label
         self.real_label_tensor = None

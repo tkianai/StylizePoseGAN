@@ -59,7 +59,7 @@ class MultiResolutionPoseDataset(data.Dataset):
         buffer = BytesIO(max_opose_bytes)
         max_opose = Image.open(buffer).convert('RGB')
 
-        if self.training and random.random < 0.5:
+        if self.training and random.random() < 0.5:
             img = img.transpose(Image.FLIP_LEFT_RIGHT)
             opose = opose.transpose(Image.FLIP_LEFT_RIGHT)
             max_opose = max_opose.transpose(Image.FLIP_LEFT_RIGHT)

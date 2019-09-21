@@ -39,7 +39,7 @@ class PoseDataLoader():
     def name(self):
         return "PoseDataLoader"
 
-    def load_data():
+    def load_data(self):
         return self.dataloader
 
     def __len__(self):
