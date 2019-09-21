@@ -110,7 +110,7 @@ class PoseGANModel(BaseModel):
 
         # gradient penalty
         loss_gp = 0
-        if not self.opt.no_gp:
+        if False and not self.opt.no_gp:
             # real_image.requires_grad = True
             pred_real_gp = self.discriminate(input_label, real_image, step, alpha)
             grad_real = torch.autograd.grad(
