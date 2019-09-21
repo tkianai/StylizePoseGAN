@@ -35,7 +35,7 @@ class HTML:
         self.add_table()
         with self.t:
             with tr():
-                for im, txt, lin in zip(imgs, txts, links):
+                for im, txt, link in zip(ims, txts, links):
                     with td(style="word-wrap: break-word;", halign="center", valign="top"):
                         with p():
                             with a(href=os.path.join('images', link)):

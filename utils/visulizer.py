@@ -39,7 +39,7 @@ class Visualizer():
             img_summaries = []
             for label, image_numpy in visuals.items():
                 self.writer.add_image(
-                    "Epoch{}step-{}-{}".format(epoch, step, label), image_numpy, dataformats='HWC')
+                    "Epoch{}step-{}-{}.jpg".format(epoch, step, label), image_numpy, dataformats='HWC')
 
         if self.use_html:
             for label, image_numpy in visuals.items():
