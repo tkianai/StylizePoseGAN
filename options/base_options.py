@@ -30,7 +30,7 @@ class BaseOptions():
         # for displays
         self.parser.add_argument(
             '--display_winsize', type=int, default=512,  help='display window size')
-        self.parser.add_argument('--tf_board', action='store_true',
+        self.parser.add_argument('--tboard', action='store_true',
                                  help='if specified, use tensorboard logging. Requires tensorflow installed')
 
         self.initialized = True
@@ -61,7 +61,7 @@ class BaseOptions():
 
         # save to the disk
         expr_dir = os.path.join(self.opt.checkpoints_dir, self.opt.name)
-        util.mkdirs(expr_dir)
+        misc.mkdirs(expr_dir)
         if save and not self.opt.continue_train:
             file_name = os.path.join(expr_dir, 'opt.txt')
             with open(file_name, 'wt') as opt_file:

@@ -10,6 +10,7 @@ def build_model(opt):
     else:
         raise NotImplementedError("{} not supported yet!".format(opt.model))
 
+    model.initialize(opt)
     print("Model [{}] was created!".format(model.name()))
 
     if opt.isTrain and len(opt.gpu_ids):

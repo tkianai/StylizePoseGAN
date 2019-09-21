@@ -18,8 +18,8 @@ class Visualizer():
         self.name = opt.name
 
         if self.tboard:
-            self.log_idr = os.path.join(opt.checkpoints_dir, opt.name, 'runs')
-            self.writer = SummaryWriter(self.log_idr)
+            self.log_dir = os.path.join(opt.checkpoints_dir, opt.name, 'runs')
+            self.writer = SummaryWriter(self.log_dir)
 
         if self.use_html:
             self.web_dir = os.path.join(opt.checkpoints_dir, opt.name, 'web')
@@ -29,7 +29,7 @@ class Visualizer():
 
         self.log_name = os.path.join(
             opt.checkpoints_dir, opt.name, 'loss_log.txt')
-        with open(self.log_idr, "a") as log_file:
+        with open(self.log_name, "a") as log_file:
             now = time.strftime("%c")
             log_file.write(
                 '======== Training Loss ({}) ========\n'.format(now))

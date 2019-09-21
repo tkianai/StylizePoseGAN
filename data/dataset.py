@@ -6,11 +6,11 @@ import lmdb
 from io import BytesIO
 import torchvision.transforms as transforms
 import torch
-import torch.utils.data.dataset as Dataset
+import torch.utils.data as data
 import random
 
 
-class MultiResolutionPoseDataset(Dataset):
+class MultiResolutionPoseDataset(data.Dataset):
 
     def __init__(self):
         super().__init__()
