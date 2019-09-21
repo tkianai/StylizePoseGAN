@@ -105,24 +105,25 @@ class PoseGANModel(BaseModel):
 
         # VGG feature matching loss
         loss_G_VGG = 0
-        if not self.opt.no_vgg_loss:
+        if not self.opt.no_vgg_loss and step > 4:
             loss_G_VGG = self.criterionVGG(fake_image, real_image) * self.opt.lambda_feat
 
         # gradient penalty
         loss_gp = 0
         if not self.opt.no_gp:
-            real_image.requires_grad = True
+            # real_image.requires_grad = True
             pred_real_gp = self.discriminate(input_label, real_image, step, alpha)
             grad_real = torch.autograd.grad(
-                outputs=pred_real_gp.sum(), 
-                inputs=real_image, 
-                create_graph=True
+                outputs=pred_real_gp[-1].sum(), 
+                inputs=torch.cat((input_label, real_image.detach()), dim=1),
+                create_graph=True,
+                allow_unused=True
             )[0]
             grad_penalty = (
                 grad_real.view(grad_real.size(0), -1).norm(2, dim=1) ** 2
             ).mean()
             loss_gp = self.opt.lambda_gp * grad_penalty
-            real_image.requires_grad = False
+            # real_image.requires_grad = False
 
 
         return [self.loss_filter(loss_G_GAN, loss_G_GAN_Feat, loss_G_VGG, loss_D_real, loss_D_fake, loss_gp), None if not infer else fake_image]
