@@ -454,9 +454,10 @@ class PoseEncoder(nn.Module):
         # self.lrelu = nn.LeakyReLU(0.2)
 
     def forward(self, input):
-
+        
+        out = input
         for conv in self.cnn:
-            out = conv(input)
+            out = conv(out)
 
         out = self.linear(out)
         # out = self.lrelu(out)
