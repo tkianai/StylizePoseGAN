@@ -15,9 +15,9 @@ class MultiResolutionPoseDataset(Dataset):
     def __init__(self):
         super().__init__()
 
-    def initialize(self, opt, resolution=8):
-        self.opt = opt
-        self.root = opt.dataroot
+    def initialize(self, root, training=True, resolution=8):
+        self.root = root
+        self.training = training
         self.env = lmdb.open(
             self.root,
             readonly=True,
@@ -59,7 +59,7 @@ class MultiResolutionPoseDataset(Dataset):
         buffer = BytesIO(max_opose_bytes)
         max_opose = Image.open(buffer).convert('RGB')
 
-        if self.opt.isTrain and random.random < 0.5:
+        if self.training and random.random < 0.5:
             img = img.transpose(Image.FLIP_LEFT_RIGHT)
             opose = opose.transpose(Image.FLIP_LEFT_RIGHT)
             max_opose = max_opose.transpose(Image.FLIP_LEFT_RIGHT)
@@ -73,7 +73,7 @@ class MultiResolutionPoseDataset(Dataset):
         return input_dict
 
     def __len__(self):
-        return self.length // self.opt.batchSize * self.opt.batchSize
+        return self.length
 
     def get_resolution(self):
         return self.resolution
