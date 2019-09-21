@@ -38,7 +38,7 @@ def train(model, optimizer_G, optimizer_D, data_loader, train_solver, visualizer
         dataset_size = len(dataset)
 
         # train
-        for epoch in range(start_epoch, epochs):
+        for epoch in range(start_epoch, epochs + 1):
             if (epoch > epochs // 2) or step == min_step:
                 alpha = 1
             else:
@@ -126,8 +126,8 @@ def main(opt):
     optimizer_G, optimizer_D = model.module.optimizer_G, model.module.optimizer_D
 
     train_solver = {
-        8: {'batch_size': 48, 'epochs': 2, 'lr': 0.0002},
-        16: {'batch_size': 48, 'epochs': 2, 'lr': 0.0002},
+        8: {'batch_size': 40, 'epochs': 2, 'lr': 0.0002},
+        16: {'batch_size': 40, 'epochs': 2, 'lr': 0.0002},
         32: {'batch_size': 40, 'epochs': 4, 'lr': 0.0002},
         64: {'batch_size': 40, 'epochs': 4, 'lr': 0.0002},
         128: {'batch_size': 32, 'epochs': 8, 'lr': 0.0002},
