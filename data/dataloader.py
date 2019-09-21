@@ -33,6 +33,7 @@ class PoseDataLoader():
             self.dataset,
             batch_size=self.batch_size,
             shuffle=self.dataset.training,
+            drop_last=True,
             num_workers=8,
         )
 
