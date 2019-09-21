@@ -83,7 +83,7 @@ def train(model, optimizer_G, optimizer_D, data_loader, train_solver, visualizer
                     errors = {k: v.data.item() if not isinstance(
                         v, int) else v for k, v in loss_dict.items()}
                     t = (time.time() - iter_start_time) / print_freq
-                    visualizer.print_current_errors(epoch, i, errors, t)
+                    visualizer.print_current_errors(epoch, i + 1, errors, t)
                     visualizer.plot_current_errors(errors, optimize_step)
 
 

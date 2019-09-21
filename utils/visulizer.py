@@ -56,7 +56,7 @@ class Visualizer():
 
             # update webpage
             webpage = html.HTML(
-                self.web_dir, "Experiment name = {}".format(name), refresh=30)
+                self.web_dir, "Experiment name = {}".format(self.name), refresh=30)
             for n in range(epoch, 0, -1):
                 webpage.add_header("epoch [{}]".format(n))
                 ims = []
@@ -90,7 +90,7 @@ class Visualizer():
     def plot_current_errors(self, errors, step):
         if self.tboard:
             for tag, value in errors.items():
-                self.writer.add_scalar(tag, value)
+                self.writer.add_scalar(tag, value, step)
 
     def print_current_errors(self, epoch, i, errors, t):
         msg = "(epoch: {}, iters: {}, time: {:.3f})".format(epoch, i, t)
