@@ -86,7 +86,7 @@ class PoseGANModel(BaseModel):
         # GAN loss (Fake passability loss)
         pred_fake_for_g = self.netD(torch.cat((input_label, fake_image), dim=1), step, alpha)
         loss_G_GAN = self.criterionGAN(pred_fake_for_g, True)
-        losses['G_GAN'] = loss_G_VGG
+        losses['G_GAN'] = loss_G_GAN
 
         # GAN feature matching loss
         loss_G_GAN_Feat = 0
