@@ -12,15 +12,6 @@ class PoseGANModel(BaseModel):
         return "PoseGANModel"
 
 
-    def init_loss_filter(self, use_gan_feat_loss, use_vgg_loss, use_gp):
-        flags = (True, use_gan_feat_loss, use_vgg_loss, True, True, use_gp)
-
-        def loss_filter(g_gan, g_gan_feat, g_vgg, d_real, d_fake, gp):
-            return [l for (l, f) in zip((g_gan, g_gan_feat, g_vgg, d_real, d_fake, gp), flags) if f]
-
-        return loss_filter
-
-
     def initialize(self, opt):
         BaseModel.initialize(self, opt)
         if not opt.isTrain:
@@ -45,14 +36,11 @@ class PoseGANModel(BaseModel):
             self.old_lr = opt.lr
 
             # define loss functions
-            self.loss_filter = self.init_loss_filter(not opt.no_ganFeat_loss, not opt.no_vgg_loss, not opt.no_gp)
             self.criterionGAN = posegan_util.GANLoss(use_lsgan=not opt.no_lsgan, tensor=self.Tensor)
             self.criterionFeat = torch.nn.L1Loss()
 
             if not opt.no_vgg_loss:
                 self.criterionVGG = posegan_util.VGGLoss(self.gpu_ids)
-
-            self.loss_names = self.loss_filter('G_GAN', 'G_GAN_Feat', 'G_VGG', 'D_real', 'D_fake', 'GP')
 
             # initialize optimizer
             self.optimizer_G = torch.optim.Adam(self.netG.generator.parameters(), lr=opt.lr, betas=(0.5, 0.999))
@@ -79,6 +67,7 @@ class PoseGANModel(BaseModel):
 
     def forward(self, style, label, image, step=0, alpha=-1, infer=False):
 
+        losses = {}
         input_style, input_label, real_image = self.encode_input(style, label, image)
 
         # Fake Generation
@@ -87,14 +76,17 @@ class PoseGANModel(BaseModel):
         # Fake detection and Loss
         pred_fake = self.discriminate(input_label, fake_image, step, alpha)
         loss_D_fake = self.criterionGAN(pred_fake, False)
+        losses['D_fake'] = loss_D_fake
 
         # Real Detection and Loss
         pred_real = self.discriminate(input_label, real_image, step, alpha)
         loss_D_real = self.criterionGAN(pred_real, True)
+        losses['D_real'] = loss_D_real
 
         # GAN loss (Fake passability loss)
         pred_fake_for_g = self.netD(torch.cat((input_label, fake_image), dim=1), step, alpha)
         loss_G_GAN = self.criterionGAN(pred_fake_for_g, True)
+        losses['G_GAN'] = loss_G_VGG
 
         # GAN feature matching loss
         loss_G_GAN_Feat = 0
@@ -102,31 +94,34 @@ class PoseGANModel(BaseModel):
             feat_weights = 1.0 / len(pred_fake)
             for i in range(len(pred_fake) - 1):
                 loss_G_GAN_Feat += feat_weights * self.opt.lambda_feat * self.criterionFeat(pred_fake[i], pred_real[i].detach())
+            losses['G_GAN_Feat'] = loss_G_GAN_Feat
 
         # VGG feature matching loss
         loss_G_VGG = 0
         if not self.opt.no_vgg_loss and step > 4:
             loss_G_VGG = self.criterionVGG(fake_image, real_image) * self.opt.lambda_feat
+            losses['G_VGG'] = loss_G_VGG
 
         # gradient penalty
         loss_gp = 0
-        if False and not self.opt.no_gp:
+        if not self.opt.no_gp:
             # real_image.requires_grad = True
             pred_real_gp = self.discriminate(input_label, real_image, step, alpha)
             grad_real = torch.autograd.grad(
                 outputs=pred_real_gp[-1].sum(), 
                 inputs=torch.cat((input_label, real_image.detach()), dim=1),
                 create_graph=True,
-                allow_unused=True
+                allow_unused=True,
+                retain_graph=True,
             )[0]
             grad_penalty = (
                 grad_real.view(grad_real.size(0), -1).norm(2, dim=1) ** 2
             ).mean()
             loss_gp = self.opt.lambda_gp * grad_penalty
             # real_image.requires_grad = False
+            losses['GP'] = loss_gp
 
-
-        return [self.loss_filter(loss_G_GAN, loss_G_GAN_Feat, loss_G_VGG, loss_D_real, loss_D_fake, loss_gp), None if not infer else fake_image]
+        return [losses, None if not infer else fake_image]
 
 
     def inference(self, style, step=0, alpha=-1):

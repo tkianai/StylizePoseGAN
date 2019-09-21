@@ -57,13 +57,12 @@ def train(model, optimizer_G, optimizer_D, data_loader, train_solver, visualizer
                 losses, generated = model(data['style'], data['label'], data['image'], step=step, alpha=alpha, infer=save_fake)
 
                 # sum per device losses
-                losses = [torch.mean(x) if not isinstance(x, int) else x for x in losses]
-                loss_dict = dict(zip(model.module.loss_names, losses))
+                loss_dict = {k: torch.mean(x) for k, v in losses}
 
                 # calculate final loss scalar
                 loss_D = (loss_dict['D_fake'] + loss_dict['D_real']) * 0.5
                 loss_G = loss_dict['G_GAN'] + loss_dict.get('G_GAN_Feat', 0) + loss_dict.get('G_VGG', 0)
-                loss_GP = loss_dict.get('loss_gp', 0)
+                loss_GP = loss_dict.get('GP', 0)
 
                 ############### Backward Pass ####################
                 # update generator weights
@@ -74,7 +73,8 @@ def train(model, optimizer_G, optimizer_D, data_loader, train_solver, visualizer
                 # update discriminator weights
                 optimizer_D.zero_grad()
                 loss_D.backward()
-                loss_GP.backward()
+                if not opt.no_gp:
+                    loss_GP.backward()
                 optimizer_D.step()
 
                 ############## Display results and errors ##########
