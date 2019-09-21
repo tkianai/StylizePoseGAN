@@ -105,11 +105,11 @@ class PoseGANModel(BaseModel):
         # gradient penalty
         loss_gp = 0
         if not self.opt.no_gp:
-            # real_image.requires_grad = True
+            real_image.requires_grad = True
             pred_real_gp = self.discriminate(input_label, real_image, step, alpha)
             grad_real = torch.autograd.grad(
                 outputs=pred_real_gp[-1].sum(), 
-                inputs=torch.cat((input_label, real_image.detach()), dim=1),
+                inputs=torch.cat((input_label, real_image), dim=1),
                 create_graph=True,
                 allow_unused=True,
                 retain_graph=True,
@@ -118,7 +118,7 @@ class PoseGANModel(BaseModel):
                 grad_real.view(grad_real.size(0), -1).norm(2, dim=1) ** 2
             ).mean()
             loss_gp = self.opt.lambda_gp * grad_penalty
-            # real_image.requires_grad = False
+            real_image.requires_grad = False
             losses['GP'] = loss_gp
 
         return [losses, None if not infer else fake_image]
