@@ -126,13 +126,13 @@ def main(opt):
     optimizer_G, optimizer_D = model.module.optimizer_G, model.module.optimizer_D
 
     train_solver = {
-        8: {'batch_size': 256, 'epochs': 128, 'lr': 0.0002},
-        16: {'batch_size': 256, 'epochs': 128, 'lr': 0.0002},
-        32: {'batch_size': 256, 'epochs': 128, 'lr': 0.0002},
-        64: {'batch_size': 128, 'epochs': 128, 'lr': 0.0002},
-        128: {'batch_size': 128, 'epochs': 64, 'lr': 0.0002},
-        256: {'batch_size': 64, 'epochs': 32, 'lr': 0.0002},
-        512: {'batch_size': 32, 'epochs': 32, 'lr': 0.0002},
+        8: {'batch_size': 16, 'epochs': 32, 'lr': 0.0002},
+        16: {'batch_size': 16, 'epochs': 32, 'lr': 0.0002},
+        32: {'batch_size': 16, 'epochs': 32, 'lr': 0.0002},
+        64: {'batch_size': 16, 'epochs': 32, 'lr': 0.0002},
+        128: {'batch_size': 16, 'epochs': 32, 'lr': 0.0002},
+        256: {'batch_size': 16, 'epochs': 32, 'lr': 0.0002},
+        512: {'batch_size': 16, 'epochs': 32, 'lr': 0.0002},
         1024: {'batch_size': 16, 'epochs': 32, 'lr': 0.0002},
     }
 
