@@ -410,7 +410,7 @@ class Generator(nn.Module):
 
         crossover = 0
         for i, (conv, to_rgb) in enumerate(zip(self.progression, self.to_rgb)):
-            if crossover < len(inject_index) and i > inject_index(crossover):
+            if crossover < len(inject_index) and i > inject_index[crossover]:
                 crossover = min(crossover + 1, len(style))
             
             style_step = style[crossover]
