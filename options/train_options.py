@@ -29,4 +29,9 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--no_gp', action='store_true',
                                  help='do *not* use gradient penalty')
 
+        self.parser.add_argument(
+            '--lambda_feat', type=float, default=10.0, help='weight for feature matching loss')
+        self.parser.add_argument(
+            '--lambda_gp', type=float, default=5.0, help='weight for gradient penalty')
+
         self.isTrain = True
