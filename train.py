@@ -15,10 +15,10 @@ from utils.visulizer import Visualizer
 def train(model, optimizer_G, optimizer_D, data_loader, train_solver, visualizer, start_step, start_epoch, iter_path):
     max_step = 8
     min_step = 1
-    print_freq = 100
+    print_freq = 10
     display_freq = 100
     save_freq = 1000
-    optimize_step = 1
+    optimize_step = 0
     
     for step in range(start_step, max_step + 1):
 
@@ -46,7 +46,7 @@ def train(model, optimizer_G, optimizer_D, data_loader, train_solver, visualizer
                 alpha = min(1, 1.0 / (epochs // 2) * (epoch + 1))
             epoch_start_time = time.time()
             for i, data in enumerate(dataset):
-                optimize_step += i
+                optimize_step += 1
                 if optimize_step % print_freq == 0:
                     iter_start_time = time.time()
                 
@@ -83,7 +83,7 @@ def train(model, optimizer_G, optimizer_D, data_loader, train_solver, visualizer
                     errors = {k: v.data.item() if not isinstance(
                         v, int) else v for k, v in loss_dict.items()}
                     t = (time.time() - iter_start_time) / print_freq
-                    visualizer.print_current_errors(epoch, epoch_iter, errors, t)
+                    visualizer.print_current_errors(epoch, i, errors, t)
                     visualizer.plot_current_errors(errors, optimize_step)
 
 
