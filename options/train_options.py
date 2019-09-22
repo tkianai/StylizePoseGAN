@@ -32,9 +32,29 @@ class TrainOptions(BaseOptions):
             '--lambda_gp', type=float, default=5.0, help='weight for gradient penalty')
         self.parser.add_argument(
             '--lr', type=float, default=0.0002, help='initial learning rate for adam')
+
+        self.parser.add_argument(
+            '--min_size', type=int, default=8, help='minimum training size')
+        self.parser.add_argument(
+            '--max_size', type=int, default=1024, help='maximum training size')
+        self.parser.add_argument(
+            '--start_size', type=int, default=8, help='start training size')
+        self.parser.add_argument(
+            '--size_iter', type=int, default=1, help='iteration counter for each step')
+        self.parser.add_argument(
+            '--start_epoch', type=int, default=1, help='record epoch for whole training')
+        self.parser.add_argument(
+            '--start_iter', type=int, default=1, help='the whole iteration counter')
         self.parser.add_argument(
             '--max_iteration', type=int, default=25000, help='max iteration for training')
         self.parser.add_argument(
             '--iter_each_step', type=int, default=3000, help='iterations for each step')
+        
+        self.parser.add_argument(
+            '--print_freq', type=int, default=10, help='print error each # iterations')
+        self.parser.add_argument(
+            '--display_freq', type=int, default=100, help='display sampled images each # iterations')
+        self.parser.add_argument(
+            '--save_freq', type=int, default=1000, help='save checkpoint each # iterations')
 
         self.isTrain = True
