@@ -1,6 +1,8 @@
 
 import os
+import math
 import time
+import datetime
 import numpy as np
 import torch
 from collections import OrderedDict
@@ -12,99 +14,123 @@ from utils import misc
 from utils.visulizer import Visualizer
 
 
-def train(model, optimizer_G, optimizer_D, data_loader, train_solver, visualizer, start_step, start_epoch, iter_path):
-    max_step = 8
-    min_step = 1
-    print_freq = 10
-    display_freq = 100
-    save_freq = 1000
-    optimize_step = 0
+def config_step(step, size_solver, model, data_loader):
+
+    # config for each step
+    resolution = 4 * 2 ** step
+    config = size_solver.get(resolution)
+    batch_size = config['batch_size']
+    lr = config['lr']
+
+    # update learning rate
+    model.module.update_learning_rate(lr)
+
+    # setup dataset
+    data_loader.update(resolution, batch_size)
+    dataset = data_loader.load_data()
     
-    for step in range(start_step, max_step + 1):
+    return dataset
 
-        # config for each step
-        resolution = 4 * 2 ** step
-        config = train_solver.get(resolution)
-        batch_size = config['batch_size']
-        epochs = config['epochs']
-        lr = config['lr']
 
-        # update learning rate
-        model.module.update_learning_rate(lr)
+def train(opt, model, optimizer_G, optimizer_D, data_loader, size_solver, visualizer, iter_path):
 
-        # setup dataset
-        data_loader.update(resolution, batch_size)
-        dataset = data_loader.load_data()
-        dataset_size = len(dataset)
+    step = int(math.log2(opt.start_size)) - 2
+    max_step = int(math.log2(opt.max_size)) - 2
+    iteration = opt.start_iter
+    epoch = opt.start_epoch
+    size_iter = opt.size_iter
+    APPROACHED = True if step > max_step else False
+    iter_start_time = time.time()
+    start_training_time = time.time()
+    dataset, resolution = config_step(step, size_solver, model, data_loader)
 
-        # train
-        for epoch in range(start_epoch, epochs + 1):
-            if (epoch > epochs // 2) or step == min_step:
+    while True:
+
+        for data in dataset:
+            
+            if (size_iter > opt.iter_each_step) or (iteration > opt.max_iter):
+                break
+
+            if (size_iter > opt.iter_each_step // 2) or (resolution == opt.min_size) or APPROACHED:
                 alpha = 1
             else:
-                # NOTE another choice, update in iteration level
-                alpha = min(1, 1.0 / (epochs // 2) * (epoch + 1))
-            epoch_start_time = time.time()
-            for i, data in enumerate(dataset):
-                optimize_step += 1
-                if optimize_step % print_freq == 0:
-                    iter_start_time = time.time()
-                
-                # whether to collect output images
-                save_fake = optimize_step % display_freq == 0
+                alpha = min(1, 1.0 / (opt.iter_each_step // 2) * (size_iter + 1))
 
-                ############## Forward Pass ######################
-                losses, generated = model(data['style'], data['label'], data['image'], step=step, alpha=alpha, infer=save_fake)
+            
+            # whether to collect output images
+            save_fake = iteration % opt.display_freq == 0
 
-                # sum per device losses
-                loss_dict = {k: torch.mean(v) for k, v in losses.items()}
+            losses, generated = model(
+                data['style'], data['label'], data['image'], step=step, alpha=alpha, infer=save_fake)
 
-                # calculate final loss scalar
-                loss_D = (loss_dict['D_fake'] + loss_dict['D_real']) * 0.5
-                loss_G = loss_dict['G_GAN'] + loss_dict.get('G_GAN_Feat', 0) + loss_dict.get('G_VGG', 0)
-                loss_GP = loss_dict.get('GP', 0)
+            # sum per device losses
+            loss_dict = {k: torch.mean(v) for k, v in losses.items()}
 
-                ############### Backward Pass ####################
-                # update generator weights
-                optimizer_G.zero_grad()
-                loss_G.backward(retain_graph=True)
-                optimizer_G.step()
+            # calculate final loss scalar
+            loss_D = (loss_dict['D_fake'] + loss_dict['D_real']) * 0.5
+            loss_G = loss_dict['G_GAN'] + \
+                loss_dict.get('G_GAN_Feat', 0) + loss_dict.get('G_VGG', 0)
+            loss_GP = loss_dict.get('GP', 0)
 
-                # update discriminator weights
-                optimizer_D.zero_grad()
-                loss_D.backward()
-                if not opt.no_gp:
-                    loss_GP.backward()
-                optimizer_D.step()
+            # update generator weights
+            optimizer_G.zero_grad()
+            loss_G.backward(retain_graph=True)
+            optimizer_G.step()
 
-                ############## Display results and errors ##########
-                ### print out errors
-                if optimize_step % print_freq == 0:
-                    errors = {k: v.data.item() if not isinstance(
-                        v, int) else v for k, v in loss_dict.items()}
-                    t = (time.time() - iter_start_time) / print_freq
-                    visualizer.print_current_errors(epoch, i + 1, errors, t)
-                    visualizer.plot_current_errors(errors, optimize_step)
+             # update discriminator weights
+             optimizer_D.zero_grad()
+            loss_D.backward()
+            if not opt.no_gp:
+                loss_GP.backward()
+            optimizer_D.step()
 
+            # print out errors
+            if iteration % opt.print_freq == 0:
+                errors = {k: v.data.item() if not isinstance(
+                    v, int) else v for k, v in loss_dict.items()}
+                t = (time.time() - iter_start_time) / opt.print_freq
+                visualizer.print_current_errors(resolution, epoch, iteration, errors, t)
+                visualizer.plot_current_errors(errors, iteration)
+                iter_start_time = time.time()
 
-                ### display output images
-                if save_fake:
-                    visuals = OrderedDict([('input_label', misc.tensor2im(data['label'][0])),
+            # display output images
+            if save_fake:
+                visuals = OrderedDict([('input_label', misc.tensor2im(data['label'][0])),
                                         ('synthesized_image', misc.tensor2im(generated.data[0])),
-                                        ('real_image', misc.tensor2im(data['image'][0]))])
-                    visualizer.display_current_results(visuals, epoch, optimize_step)
+                    ('real_image', misc.tensor2im(data['image'][0]))])
+                visualizer.display_current_results(
+                    visuals, resolution, epoch, iteration)
 
-                ### save latest model
-                if optimize_step % save_freq == 0:
-                    print('saving the latest model (epoch %d, optimize_step %d)' %
-                        (epoch, optimize_step))
-                    model.module.save('latest')
-                    model.module.save("{}_{}".format(step, epoch))
-                    np.savetxt(iter_path, (step, epoch), delimiter=',', fmt='%d')
+            # save latest model
+            if iteration % opt.save_freq == 0:
+                print('saving the latest model (size {}, iteration {})'.format(resolution, iteration))
+                model.module.save('0', 'latest')
+                model.module.save(str(resolution), str(iteration))
+                np.savetxt(iter_path, (resolution, size_iter, epoch, iteration), delimiter=',', fmt='%d')
 
-            # end of epoch
-            print('End of epoch %d / %d \t Time Taken: %d sec' %
-                (epoch, epochs, time.time() - epoch_start_time))
+            size_iter += 1
+            iteration += 1
+        
+        epoch += 1
+
+        if size_iter > opt.iter_each_step:
+            # update config
+            step += 1
+            if step > max_step:
+                step = max_step
+                APPROACHED = True
+
+            size_iter = 0
+            dataset, resolution = config_step(step, size_solver, model, data_loader)
+        
+        if iteration > opt.max_iter:
+            total_training_time = time.time() - start_training_time
+            total_time_str = str(datetime.timedelta(seconds=total_training_time))
+            print("Total training time: {} ({:.4f} s / it)".format(
+                total_time_str, total_training_time / (opt.max_iter - opt.start_iter)
+            ))
+            model.module.save('Final-' + str(resolution), str(iteration))
+            break
 
 
 def main(opt):
@@ -112,31 +138,34 @@ def main(opt):
     iter_path = os.path.join(opt.checkpoints_dir, opt.name, 'iter.txt')
     if opt.continue_train:
         try:
-            start_step, start_epoch = np.loadtxt(iter_path, delimiter=',', dtype=int)
+            start_size, size_iter, start_epoch, start_iter = np.loadtxt(iter_path, delimiter=',', dtype=int)
+            print('Resuming from size {} at iteration {}'.format(
+                start_size, start_iter))
+            opt.start_size = start_size
+            opt.size_iter = size_iter
+            opt.start_epoch = start_epoch
+            opt.start_iter = start_iter
         except:
-            start_step, start_epoch = 1, 1
-        print('Resuming from epoch {} at iteration {}'.format(start_epoch, epoch_iter))
-    else:
-        start_step, start_epoch = 1, 1
+            print('Start training from scratch: size {} at iteration {}'.format(
+                opt.start_size, opt.start_iter))
 
-    data_loader = build_dataloader(opt.dataroot, training=opt.isTrain, resolution=8, batch_size=256)
-
+    data_loader = build_dataloader(opt.dataroot, training=opt.isTrain, resolution=8, batch_size=8)
     model = build_model(opt)
     visualizer = Visualizer(opt)
     optimizer_G, optimizer_D = model.module.optimizer_G, model.module.optimizer_D
 
-    train_solver = {
-        8: {'batch_size': 40, 'epochs': 2, 'lr': 0.0002},
-        16: {'batch_size': 40, 'epochs': 2, 'lr': 0.0002},
-        32: {'batch_size': 40, 'epochs': 4, 'lr': 0.0002},
-        64: {'batch_size': 40, 'epochs': 4, 'lr': 0.0002},
-        128: {'batch_size': 32, 'epochs': 8, 'lr': 0.0002},
-        256: {'batch_size': 32, 'epochs': 16, 'lr': 0.0002},
-        512: {'batch_size': 16, 'epochs': 16, 'lr': 0.0002},
-        1024: {'batch_size': 16, 'epochs': 32, 'lr': 0.0002},
+    size_solver = {
+        8: {'batch_size': 40, 'lr': 0.001},
+        16: {'batch_size': 40, 'lr': 0.001},
+        32: {'batch_size': 32, 'lr': 0.001},
+        64: {'batch_size': 32, 'lr': 0.002},
+        128: {'batch_size': 24, 'lr': 0.002},
+        256: {'batch_size': 24, 'lr': 0.002},
+        512: {'batch_size': 16, 'lr': 0.003},
+        1024: {'batch_size': 16, 'lr': 0.003},
     }
 
-    train(model, optimizer_G, optimizer_D, data_loader, train_solver, visualizer, start_step, start_epoch, iter_path)
+    train(opt, model, optimizer_G, optimizer_D, data_loader, size_solver, visualizer, iter_path)
 
 
 if __name__ == "__main__":
