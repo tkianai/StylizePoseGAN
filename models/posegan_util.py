@@ -452,7 +452,7 @@ class PoseEncoder(nn.Module):
         cut_num = len(encoder_layers)
         cut_num -= 10 - int(log2(label_size))
         encoder_layers = encoder_layers[:cut_num]
-        encoder_layers += [ConvBlock(512, 512, 3, 1, 4, 0),  # 1]
+        encoder_layers += [ConvBlock(512, 512, 3, 1, 4, 0)]  # 1
         self.cnn = nn.ModuleList(encoder_layers)
 
         self.linear = EqualLinear(512, code_dim)
