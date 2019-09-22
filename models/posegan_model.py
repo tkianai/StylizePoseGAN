@@ -96,7 +96,9 @@ class PoseGANModel(BaseModel):
         if not self.opt.no_ganFeat_loss:
             feat_weights = 1.0 / len(pred_fake)
             for i in range(len(pred_fake) - 1):
-                loss_G_GAN_Feat += feat_weights * self.opt.lambda_feat * self.criterionFeat(pred_fake[i], pred_real[i].detach())
+                loss_G_GAN_Feat += feat_weights * self.opt.lambda_feat * \
+                    self.criterionFeat(
+                        pred_fake_for_g[i], pred_real[i].detach())
             losses['G_GAN_Feat'] = loss_G_GAN_Feat
 
         # VGG feature matching loss

@@ -74,7 +74,7 @@ def train(opt, model, optimizer_G, optimizer_D, data_loader, size_solver, visual
 
             # update generator weights
             optimizer_G.zero_grad()
-            loss_G.backward(retain_graph=True)
+            loss_G.backward()
             optimizer_G.step()
 
             # update discriminator weights
