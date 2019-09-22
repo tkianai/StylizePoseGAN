@@ -161,7 +161,7 @@ def main(opt):
         64: {'batch_size': 32, 'lr': 0.002},
         128: {'batch_size': 24, 'lr': 0.002},
         256: {'batch_size': 16, 'lr': 0.002},
-        512: {'batch_size': 16, 'lr': 0.003},
+        512: {'batch_size': 8, 'lr': 0.003},
         1024: {'batch_size': 8, 'lr': 0.003},
     }
 
