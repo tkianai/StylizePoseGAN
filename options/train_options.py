@@ -46,7 +46,7 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument(
             '--start_iter', type=int, default=1, help='the whole iteration counter')
         self.parser.add_argument(
-            '--max_iteration', type=int, default=25000, help='max iteration for training')
+            '--max_iter', type=int, default=25000, help='max iteration for training')
         self.parser.add_argument(
             '--iter_each_step', type=int, default=3000, help='iterations for each step')
         
