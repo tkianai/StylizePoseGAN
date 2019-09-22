@@ -160,9 +160,9 @@ def main(opt):
         32: {'batch_size': 32, 'lr': 0.001},
         64: {'batch_size': 32, 'lr': 0.002},
         128: {'batch_size': 24, 'lr': 0.002},
-        256: {'batch_size': 24, 'lr': 0.002},
+        256: {'batch_size': 16, 'lr': 0.002},
         512: {'batch_size': 16, 'lr': 0.003},
-        1024: {'batch_size': 16, 'lr': 0.003},
+        1024: {'batch_size': 8, 'lr': 0.003},
     }
 
     train(opt, model, optimizer_G, optimizer_D, data_loader, size_solver, visualizer, iter_path)
