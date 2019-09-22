@@ -18,7 +18,7 @@ class PoseGANModel(BaseModel):
             torch.backends.cudnn.benchmark = True
 
         # define networks
-        self.netG = posegan_util.define_G(code_dim=opt.code_dim, gpu_ids=self.gpu_ids)
+        self.netG = posegan_util.define_G(code_dim=opt.code_dim, label_size=opt.label_size, gpu_ids=self.gpu_ids)
 
         if self.isTrain:
             self.netD = posegan_util.define_D(gpu_ids=self.gpu_ids)

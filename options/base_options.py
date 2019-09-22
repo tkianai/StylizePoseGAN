@@ -34,6 +34,7 @@ class BaseOptions():
                                  help='if specified, use tensorboard logging. Requires tensorflow installed')
 
         self.parser.add_argument('--code_dim', default=512, type=int)
+        self.parser.add_argument('--label_size', default=1024, type=int)
 
         self.initialized = True
 

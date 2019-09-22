@@ -4,11 +4,11 @@ from .dataset import MultiResolutionPoseDataset
 import torch.utils.data
 
 
-def build_dataset(root, training=True, resolution=8):
+def build_dataset(root, label_size, training=True, resolution=8):
 
     dataset = MultiResolutionPoseDataset()
     print("[{}] was created!".format(dataset.name()))
-    dataset.initialize(root, training, resolution)
+    dataset.initialize(root, label_size, training, resolution)
 
     return dataset
 
@@ -17,8 +17,8 @@ class PoseDataLoader():
     def __init__(self):
         pass
 
-    def initialize(self, root, training=True, resolution=8, batch_size=8):
-        self.dataset = build_dataset(root, training, resolution)
+    def initialize(self, root, label_size, training=True, resolution=8, batch_size=8):
+        self.dataset = build_dataset(root, label_size, training, resolution)
         self.batch_size = batch_size
         self.update(resolution, batch_size)
 
@@ -34,7 +34,7 @@ class PoseDataLoader():
             batch_size=self.batch_size,
             shuffle=self.dataset.training,
             drop_last=True,
-            num_workers=8,
+            num_workers=16,
         )
 
     def name(self):

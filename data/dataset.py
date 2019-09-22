@@ -15,7 +15,7 @@ class MultiResolutionPoseDataset(data.Dataset):
     def __init__(self):
         super().__init__()
 
-    def initialize(self, root, training=True, resolution=8):
+    def initialize(self, root, label_size, training=True, resolution=8):
         self.root = root
         self.training = training
         self.env = lmdb.open(
@@ -31,7 +31,7 @@ class MultiResolutionPoseDataset(data.Dataset):
             self.length = int(txn.get("Length".encode('utf-8')).decode('utf-8'))
 
         self.resolution = resolution
-        self.max_resolution = 1024
+        self.max_resolution = label_size
         self.transforms = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
@@ -68,7 +68,7 @@ class MultiResolutionPoseDataset(data.Dataset):
         img = self.transforms(img)
         max_opose = self.transforms(max_opose)
 
-        input_dict = {'label': opose, 'image': img, 'path': "Image-{}-{:0>7d}.png".format(self.resolution, index), 'style': max_opose}
+        input_dict = {'label': opose, 'image': img, 'style': max_opose}
 
         return input_dict
 

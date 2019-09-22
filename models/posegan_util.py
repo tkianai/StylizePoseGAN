@@ -5,7 +5,7 @@ from torch import nn
 from torch.nn import init
 from torch.nn import functional as F
 from torch.autograd import Function
-from math import sqrt
+from math import sqrt, log2
 import random
 
 
@@ -435,11 +435,12 @@ class Generator(nn.Module):
 
 
 class PoseEncoder(nn.Module):
-    def __init__(self, code_dim, fused=True):
+    def __init__(self, code_dim, label_size, fused=True):
         super().__init__()
 
-        self.cnn = nn.ModuleList([
-            ConvBlock(3, 32, 3, 1, downsample=True, fused=fused), # 512
+        assert(1024 >= label_size >= 128)
+        encoder_layers = [
+            ConvBlock(3, 32, 3, 1, downsample=True, fused=fused),  # 512
             ConvBlock(32, 64, 3, 1, downsample=True, fused=fused),  # 256
             ConvBlock(64, 128, 3, 1, downsample=True, fused=fused),  # 128
             ConvBlock(128, 256, 3, 1, downsample=True, fused=fused),  # 64
@@ -447,8 +448,12 @@ class PoseEncoder(nn.Module):
             ConvBlock(512, 512, 3, 1, downsample=True),  # 16
             ConvBlock(512, 512, 3, 1, downsample=True),  # 8
             ConvBlock(512, 512, 3, 1, downsample=True),  # 4
-            ConvBlock(512, 512, 3, 1, 4, 0),  # 1
-        ])
+        ]
+        cut_num = len(encoder_layers)
+        cut_num -= 10 - int(log2(label_size))
+        encoder_layers = encoder_layers[:cut_num]
+        encoder_layers += [ConvBlock(512, 512, 3, 1, 4, 0),  # 1]
+        self.cnn = nn.ModuleList(encoder_layers)
 
         self.linear = EqualLinear(512, code_dim)
         # self.lrelu = nn.LeakyReLU(0.2)
@@ -468,10 +473,10 @@ class PoseEncoder(nn.Module):
 
 
 class PoseGenerator(nn.Module):
-    def __init__(self, code_dim=512):
+    def __init__(self, code_dim=512, label_size=1024):
         super().__init__()
         
-        self.style = PoseEncoder(code_dim)
+        self.style = PoseEncoder(code_dim, label_size)
         self.generator = Generator(code_dim)
 
     def forward(
@@ -598,8 +603,8 @@ def weights_init(m):
 
 
 
-def define_G(code_dim=512, gpu_ids=None):
-    netG = PoseGenerator(code_dim)
+def define_G(code_dim=512, label_size=1024, gpu_ids=None):
+    netG = PoseGenerator(code_dim, label_size)
     # print(netG)
 
     if gpu_ids is not None:

@@ -149,7 +149,7 @@ def main(opt):
             print('Start training from scratch: size {} at iteration {}'.format(
                 opt.start_size, opt.start_iter))
 
-    data_loader = build_dataloader(opt.dataroot, training=opt.isTrain, resolution=8, batch_size=8)
+    data_loader = build_dataloader(opt.dataroot, opt.label_size, training=opt.isTrain, resolution=8, batch_size=8)
     model = build_model(opt)
     visualizer = Visualizer(opt)
     optimizer_G, optimizer_D = model.module.optimizer_G, model.module.optimizer_D
