@@ -57,7 +57,7 @@ class Visualizer():
             # update webpage
             webpage = html.HTML(self.web_dir, "Experiment name = {}".format(self.name), refresh=30)
             images = sorted(os.listdir(self.img_dir), reverse=True)
-            webpage.add_header("Training process visulization".format(n))
+            webpage.add_header("Training process visulization")
             ims = []
             txts = []
             links = []
