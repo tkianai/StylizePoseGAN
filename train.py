@@ -77,8 +77,8 @@ def train(opt, model, optimizer_G, optimizer_D, data_loader, size_solver, visual
             loss_G.backward(retain_graph=True)
             optimizer_G.step()
 
-             # update discriminator weights
-             optimizer_D.zero_grad()
+            # update discriminator weights
+            optimizer_D.zero_grad()
             loss_D.backward()
             if not opt.no_gp:
                 loss_GP.backward()
