@@ -29,7 +29,7 @@ def config_step(step, size_solver, model, data_loader):
     data_loader.update(resolution, batch_size)
     dataset = data_loader.load_data()
     
-    return dataset
+    return dataset, resolution
 
 
 def train(opt, model, optimizer_G, optimizer_D, data_loader, size_solver, visualizer, iter_path):
