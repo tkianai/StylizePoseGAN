@@ -88,7 +88,7 @@ class Visualizer():
         msg = "(size: {}, epoch: {}, iters: {}, time: {:.3f})".format(size, epoch, iteration, t)
         for k, v in errors.items():
             if v != 0:
-                msg += "{}: {:.3f}".format(k, v)
+                msg += "{}: {:.3f} ".format(k, v)
 
         print(msg)
         with open(self.log_name, "a") as log_file:
