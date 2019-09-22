@@ -600,7 +600,7 @@ def weights_init(m):
 
 def define_G(code_dim=512, gpu_ids=None):
     netG = PoseGenerator(code_dim)
-    print(netG)
+    # print(netG)
 
     if gpu_ids is not None:
         assert(torch.cuda.is_available())
@@ -612,7 +612,7 @@ def define_G(code_dim=512, gpu_ids=None):
 
 def define_D(gpu_ids=None):
     netD = PoseDiscriminator()
-    print(netD)
+    # print(netD)
 
     if gpu_ids is not None:
         assert(torch.cuda.is_available())
