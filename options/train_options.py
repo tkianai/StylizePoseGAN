@@ -13,11 +13,8 @@ class TrainOptions(BaseOptions):
                                  help='continue training: load the latest model')
         self.parser.add_argument('--load_pretrain', type=str, default='',
                                  help='load the pretrained model from the specified location')
-        self.parser.add_argument('--which_epoch', type=str, default='latest',
-                                 help='which epoch to load? set to latest to use latest cached model')
-
-        self.parser.add_argument(
-            '--lr', type=float, default=0.0002, help='initial learning rate for adam')
+        self.parser.add_argument('--which_iter', type=str, default='latest',
+                                 help='which iteration to load? set to latest to use latest cached model')
 
         # for discriminators
         self.parser.add_argument('--no_ganFeat_loss', action='store_true',
@@ -33,5 +30,11 @@ class TrainOptions(BaseOptions):
             '--lambda_feat', type=float, default=10.0, help='weight for feature matching loss')
         self.parser.add_argument(
             '--lambda_gp', type=float, default=5.0, help='weight for gradient penalty')
+        self.parser.add_argument(
+            '--lr', type=float, default=0.0002, help='initial learning rate for adam')
+        self.parser.add_argument(
+            '--max_iteration', type=int, default=25000, help='max iteration for training')
+        self.parser.add_argument(
+            '--iter_each_step', type=int, default=3000, help='iterations for each step')
 
         self.isTrain = True

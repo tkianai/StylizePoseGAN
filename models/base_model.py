@@ -36,26 +36,40 @@ class BaseModel(nn.Module):
     def get_current_visuals(self):
         return self.input
 
-    def save(self, label):
+    def save(self, label_size, label_iteration):
         pass
 
-    def save_network(self, network, network_label, epoch_label, gpu_ids):
-        save_filename = "{}_net_{}.pth".format(epoch_label, network_label)
+    def save_network(self, network, network_label, size_label, iteration_label, gpu_ids):
+        save_filename = "{}_{}_net_{}.pth".format(
+            size_label, iteration_label, network_label)
         save_path = os.path.join(self.save_dir, save_filename)
         torch.save(network.cpu().state_dict(), save_path)
         if len(gpu_ids) and torch.cuda.is_available():
             network.cuda()
 
         
-    def load_network(self, network, network_label, epoch_label, save_dir=''):
-        save_filename = "{}_net_{}.pth".format(epoch_label, network_label)
+    def load_network(self, network, network_label, iter_label, save_dir=''):
+        save_filename = "{}_net_{}.pth".format(iter_label, network_label)
         if not save_dir:
             save_dir = self.save_dir
-        save_path = os.path.join(save_dir, save_filename)
-        if not os.path.isfile(save_path):
-            print("{} not exists yet!".format(save_path))
+        ckpts = [e for e in os.listdir(save_dir) if save_filename in e]
+        if len(ckpts) < 1:
+            print("There no valid checkpoint in [{}] for iteration [{}]".format(
+                save_dir, iter_label))
             if network_label == 'G':
                 raise('Generator must exist!')
+        else:
+            ckpt = ckpts[0]
+            size = int(ckpt.split('_')[0])
+            for itm in ckpts:
+                if size < int(itm.split('_')[0]):
+                    ckpt = itm
+                    size = int(itm.split('_')[0])
+            save_path = os.path.join(save_dir, ckpt)
+            if not os.path.isfile(save_path):
+                print("{} not exists yet!".format(save_path))
+                if network_label == 'G':
+                    raise('Generator must exist!')
             else:
                 try:
                     network.load_state_dict(torch.load(save_path))

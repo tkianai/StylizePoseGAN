@@ -24,31 +24,34 @@ class PoseGANModel(BaseModel):
             self.netD = posegan_util.define_D(gpu_ids=self.gpu_ids)
         print("---------------Network created-------------")
 
-        # load networks
-        if not self.isTrain or opt.continue_train or opt.load_pretrain:
-            pretrained_path = '' if not self.isTrain else opt.load_pretrain
-            self.load_network(self.netG, 'G', opt.which_epoch, pretrained_path)
-            if self.isTrain:
-                self.load_network(self.netD, 'D', opt.which_epoch, pretrained_path)
-        
         # set loss functions and optimizers
         if self.isTrain:
             self.old_lr = opt.lr
 
             # define loss functions
-            self.criterionGAN = posegan_util.GANLoss(use_lsgan=not opt.no_lsgan, tensor=self.Tensor)
+            self.criterionGAN = posegan_util.GANLoss(
+                use_lsgan=not opt.no_lsgan, tensor=self.Tensor)
             self.criterionFeat = torch.nn.L1Loss()
 
             if not opt.no_vgg_loss:
                 self.criterionVGG = posegan_util.VGGLoss(self.gpu_ids)
 
             # initialize optimizer
-            self.optimizer_G = torch.optim.Adam(self.netG.generator.parameters(), lr=opt.lr, betas=(0.5, 0.999))
+            self.optimizer_G = torch.optim.Adam(
+                self.netG.generator.parameters(), lr=opt.lr, betas=(0.5, 0.999))
             self.optimizer_G.add_param_group({
                 'params': self.netG.style.parameters(),
                 'lr': opt.lr * 0.1,
             })
-            self.optimizer_D = torch.optim.Adam(self.netD.discriminator.parameters(), lr=opt.lr, betas=(0.5, 0.999))
+            self.optimizer_D = torch.optim.Adam(
+                self.netD.discriminator.parameters(), lr=opt.lr, betas=(0.5, 0.999))
+
+        # load networks
+        if not self.isTrain or opt.continue_train or opt.load_pretrain:
+            pretrained_path = '' if not self.isTrain else opt.load_pretrain
+            self.load_network(self.netG, 'G', opt.which_iter, pretrained_path)
+            if self.isTrain:
+                self.load_network(self.netD, 'D', opt.which_iter, pretrained_path)
 
     def encode_input(self, style, label_map=None, real_image=None):
 
@@ -124,19 +127,19 @@ class PoseGANModel(BaseModel):
         return [losses, None if not infer else fake_image]
 
 
-    def inference(self, style, step=0, alpha=-1):
+    def inference(self, style, step=0):
 
         input_style, input_label, real_image = self.encode_input(style, None, None)
 
         # fake generation
         with torch.no_grad():
-            fake_image = self.netG(input_style, step=step, alpha=alpha)
+            fake_image = self.netG(input_style, step=step, alpha=1)
 
         return fake_image
 
-    def save(self, which_epoch):
-        self.save_network(self.netG, 'G', which_epoch, self.gpu_ids)
-        self.save_network(self.netD, 'D', which_epoch, self.gpu_ids)
+    def save(self, which_size, which_iter):
+        self.save_network(self.netG, 'G', which_size, which_iter, self.gpu_ids)
+        self.save_network(self.netD, 'D', which_size, which_iter, self.gpu_ids)
 
 
     def update_learning_rate(self, lr):
