@@ -11,7 +11,7 @@ def test(model, data_loader, save_dir):
 
     for i, data in enumerate(dataset):
         generated = model.inference(data['style'], step=step)
-        visuals = OrderedDict([('input_label', util.tensor2im(data['style'][0])), ('synthesized_image', util.tensor2im(generated.data[0]))])
+        visuals = OrderedDict([('input_label', misc.tensor2im(data['style'][0])), ('synthesized_image', misc.tensor2im(generated.data[0]))])
         name = data['name'][0].split('/')[-1].split('.')[0]
         misc.save_images(visuals, name, save_dir)
 
