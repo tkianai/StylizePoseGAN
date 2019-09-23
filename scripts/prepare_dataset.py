@@ -95,6 +95,7 @@ def resize_into_resolutions(img, sizes, quality=100):
 
 def resize_job(img_file, sizes):
     i, file, opose = img_file
+
     img = Image.open(file)
     img = img.convert('RGB')
     imgs = resize_into_resolutions(img, sizes=sizes)
@@ -104,7 +105,7 @@ def resize_job(img_file, sizes):
     opose = opose.convert('RGB')
     oposes = resize_into_resolutions(opose, sizes=sizes)
 
-    return i, imgs, oposes
+    return i, file.split('/')[-1], imgs, oposes
 
 
 def write_to_lmdb(txn, dset, worker, sizes=(8, 16, 32, 64, 128, 256, 512, 1024)):
@@ -115,7 +116,10 @@ def write_to_lmdb(txn, dset, worker, sizes=(8, 16, 32, 64, 128, 256, 512, 1024))
     resize_fn = partial(resize_job, sizes=sizes)
 
     with mp.Pool(worker) as pool:
-        for i, imgs, oposes in tqdm(pool.imap_unordered(resize_fn, files)):
+        for i, imgname, imgs, oposes in tqdm(pool.imap_unordered(resize_fn, files)):
+            key = 'Imgname-{:0>7d}'.format(i).encode('utf-8')
+            txn.put(key, imgname)
+            
             for size, img, opose in zip(sizes, imgs, oposes):
                 key = 'Image-{}-{:0>7d}'.format(size, i).encode('utf-8')
                 txn.put(key, img)
