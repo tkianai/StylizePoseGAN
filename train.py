@@ -155,14 +155,14 @@ def main(opt):
     optimizer_G, optimizer_D = model.module.optimizer_G, model.module.optimizer_D
 
     size_solver = {
-        8: {'batch_size': 80, 'lr': 0.001},
-        16: {'batch_size': 72, 'lr': 0.001},
-        32: {'batch_size': 64, 'lr': 0.001},
-        64: {'batch_size': 56, 'lr': 0.002},
-        128: {'batch_size': 48, 'lr': 0.002},
-        256: {'batch_size': 32, 'lr': 0.002},
-        512: {'batch_size': 24, 'lr': 0.003},
-        1024: {'batch_size': 8, 'lr': 0.003},
+        8: {'batch_size': 80, 'lr': 0.0001},
+        16: {'batch_size': 72, 'lr': 0.0001},
+        32: {'batch_size': 64, 'lr': 0.0001},
+        64: {'batch_size': 56, 'lr': 0.0002},
+        128: {'batch_size': 48, 'lr': 0.0002},
+        256: {'batch_size': 32, 'lr': 0.0002},
+        512: {'batch_size': 24, 'lr': 0.0003},
+        1024: {'batch_size': 8, 'lr': 0.0003},
     }
 
     train(opt, model, optimizer_G, optimizer_D, data_loader, size_solver, visualizer, iter_path)
