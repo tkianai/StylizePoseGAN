@@ -61,6 +61,7 @@ class MultiResolutionPoseDataset(data.Dataset):
         opose = Image.open(buffer).convert('RGB')
         buffer = BytesIO(label_opose_bytes)
         label_opose = Image.open(buffer).convert('RGB')
+        imgname = imgname.decode('utf-8')
 
         if self.training and random.random() < 0.5:
             img = img.transpose(Image.FLIP_LEFT_RIGHT)

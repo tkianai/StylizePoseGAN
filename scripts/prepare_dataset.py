@@ -105,7 +105,7 @@ def resize_job(img_file, sizes):
     opose = opose.convert('RGB')
     oposes = resize_into_resolutions(opose, sizes=sizes)
 
-    return i, file.split('/')[-1], imgs, oposes
+    return i, file.split('/')[-1].encode('utf-8'), imgs, oposes
 
 
 def write_to_lmdb(txn, dset, worker, sizes=(8, 16, 32, 64, 128, 256, 512, 1024)):
