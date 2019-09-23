@@ -146,9 +146,11 @@ class PoseGANModel(BaseModel):
         self.save_network(self.netD, 'D', which_size, which_iter, self.gpu_ids)
 
 
-    def update_learning_rate(self, lr):
+    def update_learning_rate(self, lr=None, sbeta=0):
+        if lr is not None:
+            self.old_lr = lr
         for param_group in self.optimizer_D.param_groups:
-            param_group['lr'] = lr
+            param_group['lr'] = self.old_lr * (1 - sbeta)
         for param_group in self.optimizer_G.param_groups:
             gamma = param_group.get('gamma', 1)
-            param_group['lr'] = lr * gamma
+            param_group['lr'] = self.old_lr * gamma * (1 - sbeta)

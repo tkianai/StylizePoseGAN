@@ -23,7 +23,7 @@ def config_step(step, size_solver, model, data_loader):
     lr = config['lr']
 
     # update learning rate
-    model.module.update_learning_rate(lr)
+    model.module.update_learning_rate(lr=lr)
 
     # setup dataset
     data_loader.update(resolution, batch_size)
@@ -39,6 +39,7 @@ def train(opt, model, optimizer_G, optimizer_D, data_loader, size_solver, visual
     iteration = opt.start_iter
     epoch = opt.start_epoch
     size_iter = opt.size_iter
+    lr_scheduler_iter = -1
     APPROACHED = True if step > max_step else False
     iter_start_time = time.time()
     start_training_time = time.time()
@@ -117,6 +118,8 @@ def train(opt, model, optimizer_G, optimizer_D, data_loader, size_solver, visual
             # update config
             step += 1
             if step > max_step:
+                if lr_scheduler_iter == -1:
+                    lr_scheduler_iter = iteration
                 step = max_step
                 APPROACHED = True
 
@@ -131,6 +134,11 @@ def train(opt, model, optimizer_G, optimizer_D, data_loader, size_solver, visual
             ))
             model.module.save('Final-' + str(resolution), str(iteration))
             break
+
+        # linear scheduler for learning rate for each epoch
+        if APPROACHED:
+            sbeta = (iteration - lr_scheduler_iter) / (opt.max_iter - lr_scheduler_iter)
+            model.module.update_learning_rate(sbeta=sbeta)
 
 
 def main(opt):
