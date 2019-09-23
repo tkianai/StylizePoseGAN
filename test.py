@@ -3,6 +3,9 @@ import os
 import math
 from options.test_options import TestOptions
 from utils import misc
+from data.build import build_dataloader
+from models import build_model
+from collections import OrderedDict
 
 
 def test(model, data_loader, save_dir):
