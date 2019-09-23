@@ -41,7 +41,8 @@ class PoseGANModel(BaseModel):
                 self.netG.generator.parameters(), lr=opt.lr, betas=(0.5, 0.999))
             self.optimizer_G.add_param_group({
                 'params': self.netG.style.parameters(),
-                'lr': opt.lr,
+                'lr': opt.lr * opt.style_gamma,
+                'gamma': opt.style_gamma,
             })
             self.optimizer_D = torch.optim.Adam(
                 self.netD.discriminator.parameters(), lr=opt.lr, betas=(0.5, 0.999))
@@ -148,4 +149,5 @@ class PoseGANModel(BaseModel):
         for param_group in self.optimizer_D.param_groups:
             param_group['lr'] = lr
         for param_group in self.optimizer_G.param_groups:
-            param_group['lr'] = lr
+            gamma = param_group.get('gamma', 1)
+            param_group['lr'] = lr * gamma

@@ -32,6 +32,8 @@ class TrainOptions(BaseOptions):
             '--lambda_gp', type=float, default=5.0, help='weight for gradient penalty')
         self.parser.add_argument(
             '--lr', type=float, default=0.0002, help='initial learning rate for adam')
+        self.parser.add_argument(
+            '--style_gamma', type=float, default=0.1, help='mult factor of latent code generator')
 
         self.parser.add_argument(
             '--min_size', type=int, default=8, help='minimum training size')
