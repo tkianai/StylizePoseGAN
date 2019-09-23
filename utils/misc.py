@@ -32,6 +32,14 @@ def save_image(image_numpy, image_path):
     image_pil.save(image_path)
 
 
+def save_images(visuals, name, save_dir):
+
+    for label, image_numpy in visuals.items():
+        image_name = '{}_{}.jpg'.format(name, label)
+        save_path = os.path.join(save_dir, image_name)
+        util.save_image(image_numpy, save_path)
+
+
 def mkdir(path):
     if not os.path.exists(path):
         os.makedirs(path)
@@ -43,3 +51,4 @@ def mkdirs(paths):
             mkdir(path)
     else:
         mkdir(paths)
+
