@@ -68,7 +68,7 @@ def train(opt, model, optimizer_G, optimizer_D, data_loader, size_solver, visual
             loss_dict = {k: torch.mean(v) for k, v in losses.items()}
 
             # calculate final loss scalar
-            loss_D = (loss_dict['D_fake'] + loss_dict['D_real']) * 0.5
+            loss_D = (loss_dict['D_fake'] + loss_dict['D_real']) * 1.5
             loss_G = loss_dict['G_GAN'] + \
                 loss_dict.get('G_GAN_Feat', 0) + loss_dict.get('G_VGG', 0)
             loss_GP = loss_dict.get('GP', 0)

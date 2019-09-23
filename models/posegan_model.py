@@ -94,7 +94,7 @@ class PoseGANModel(BaseModel):
 
         # GAN feature matching loss
         loss_G_GAN_Feat = 0
-        if not self.opt.no_ganFeat_loss:
+        if not self.opt.no_ganFeat_loss and step > 4:
             feat_weights = 1.0 / len(pred_fake)
             for i in range(len(pred_fake) - 1):
                 loss_G_GAN_Feat += feat_weights * self.opt.lambda_feat * \
