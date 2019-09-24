@@ -21,10 +21,11 @@ class TrainOptions(BaseOptions):
                                  help='if specified, do *not* use discriminator feature matching loss')
         self.parser.add_argument('--no_vgg_loss', action='store_true',
                                  help='if specified, do *not* use VGG feature matching loss')
-        self.parser.add_argument('--no_lsgan', action='store_true',
-                                 help='do *not* use least square GAN, if false, use vanilla GAN')
         self.parser.add_argument('--no_gp', action='store_true',
                                  help='do *not* use gradient penalty')
+
+        self.parser.add_argument('--gan_loss', default='lsgan',
+                                 help='gan loss style, [lsgan | dcgan | lggan]')
 
         self.parser.add_argument(
             '--lambda_feat', type=float, default=10.0, help='weight for feature matching loss')

@@ -30,7 +30,7 @@ class PoseGANModel(BaseModel):
 
             # define loss functions
             self.criterionGAN = posegan_util.GANLoss(
-                use_lsgan=not opt.no_lsgan, tensor=self.Tensor)
+                gan_loss=opt.gan_loss, tensor=self.Tensor)
             self.criterionFeat = torch.nn.L1Loss()
 
             if not opt.no_vgg_loss:

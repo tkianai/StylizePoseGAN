@@ -630,17 +630,23 @@ def define_D(gpu_ids=None):
 # Losses
 class GANLoss(nn.Module):
     
-    def __init__(self, use_lsgan=True, target_real_label=1.0, target_fake_label=0.0, tensor=torch.FloatTensor):
+    def __init__(self, gan_loss='lsgan', target_real_label=1.0, target_fake_label=0.0, tensor=torch.FloatTensor):
         super().__init__()
         self.real_label = target_real_label
         self.fake_label = target_fake_label
         self.real_label_tensor = None
         self.fake_label_tensor = None
         self.Tensor = tensor
-        if use_lsgan:
+        if gan_loss == 'lsgan':
             self.loss = nn.MSELoss()
-        else:
+        elif gan_loss == 'dcgan':
             self.loss = nn.BCELoss()
+        elif gan_loss == 'lggan':
+            self.loss = nn.Softplus()
+        else:
+            raise NotImplementedError("{} is not supported yet!".format(gan_loss)
+        
+        self.loss_type = gan_loss
 
     
     def get_target_tensor(self, input, target_is_real):
@@ -662,9 +668,19 @@ class GANLoss(nn.Module):
 
     def __call__(self, input, target_is_real):
         # last output
-        target_tensor = self.get_target_tensor(input[-1], target_is_real)
-        return self.loss(input[-1], target_tensor)
+        output = None
+        if self.loss_type == 'lggan':
+            if target_is_real:
+                # -log(logistic(real_scores_out))
+                output = self.loss(-input)
+            else:
+                # -log(1 - logistic(fake_scores_out))
+                output = self.loss(input)
+        else:
+            target_tensor = self.get_target_tensor(input[-1], target_is_real)
+            output = self.loss(input[-1], target_tensor)
 
+        return output
 
 
 class VGGLoss(nn.Module):
