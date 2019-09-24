@@ -644,7 +644,7 @@ class GANLoss(nn.Module):
         elif gan_loss == 'lggan':
             self.loss = nn.Softplus()
         else:
-            raise NotImplementedError("{} is not supported yet!".format(gan_loss)
+            raise NotImplementedError("{} is not supported yet!".format(gan_loss))
         
         self.loss_type = gan_loss
 
@@ -672,10 +672,10 @@ class GANLoss(nn.Module):
         if self.loss_type == 'lggan':
             if target_is_real:
                 # -log(logistic(real_scores_out))
-                output = self.loss(-input)
+                output = self.loss(-input[-1])
             else:
                 # -log(1 - logistic(fake_scores_out))
-                output = self.loss(input)
+                output = self.loss(input[-1])
         else:
             target_tensor = self.get_target_tensor(input[-1], target_is_real)
             output = self.loss(input[-1], target_tensor)
