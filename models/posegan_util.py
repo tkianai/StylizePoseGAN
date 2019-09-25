@@ -435,7 +435,7 @@ class Generator(nn.Module):
 
 
 class PoseEncoder(nn.Module):
-    def __init__(self, code_dim, label_size, fused=True):
+    def __init__(self, code_dim, label_size, mlp=4, fused=True):
         super().__init__()
 
         assert(1024 >= label_size >= 128)
@@ -455,8 +455,16 @@ class PoseEncoder(nn.Module):
         encoder_layers += [ConvBlock(512, 512, 3, 1, 4, 0)]  # 1
         self.cnn = nn.ModuleList(encoder_layers)
 
-        self.linear = EqualLinear(512, code_dim)
-        # self.lrelu = nn.LeakyReLU(0.2)
+        linear_layers = []
+        linear_layers.append(EqualLinear(512, code_dim))
+        linear_layers.append(nn.LeakyReLU(0.2))
+        linear_layers.append(PixelNorm())
+
+        for i in range(mlp):
+            linear_layers.append(EqualLinear(code_dim, code_dim))
+            linear_layers.append(nn.LeakyReLU(0.2))
+
+        self.linear = nn.Sequential(*linear_layers)
 
     def forward(self, input):
         
@@ -466,7 +474,6 @@ class PoseEncoder(nn.Module):
 
         out = out.squeeze(2).squeeze(2)
         out = self.linear(out)
-        # out = self.lrelu(out)
 
         return out
 
